@@ -16,6 +16,7 @@ use JMS\Serializer\Exception\RuntimeException;
 use JMS\Serializer\Exception\UnsupportedFormatException;
 use Symfony\Component\HttpFoundation\Request;
 
+interface TestConstraintViolationListInterface extends \Iterator, \Symfony\Component\Validator\ConstraintViolationListInterface {}
 /**
  * @author Tyler Stroud <tyler@tylerstroud.com>
  */
@@ -171,7 +172,7 @@ class RequestBodyParamConverterTest extends \PHPUnit_Framework_TestCase
 
     public function testApplyWithSerializerContextOptionsForSymfonySerializer()
     {
-        $this->serializer = $this->getMock('Symfony\Component\Serializer\SerializerInterface', array('deserialize'));
+        $this->serializer = $this->getMock('Symfony\Component\Serializer\SerializerInterface', array('serialize', 'deserialize'));
         $this->converter = new RequestBodyParamConverter($this->serializer);
         $requestBody = '{"name": "Post 1", "body": "This is a blog post"}';
 
@@ -193,8 +194,8 @@ class RequestBodyParamConverterTest extends \PHPUnit_Framework_TestCase
 
     public function testApplyWithValidationErrors()
     {
-        $validator = $this->getMock('Symfony\Component\Validator\ValidatorInterface', array('validate'));
-        $validationErrors = $this->getMock('Symfony\Component\Validator\ConstraintViolationListInterface');
+        $validator = $this->getMock('Symfony\Component\Validator\ValidatorInterface');
+        $validationErrors = $this->getMock('TestConstraintViolationListInterface');
 
         $this->converter = new RequestBodyParamConverter($this->serializer, null, null, $validator, 'validationErrors');
 
@@ -291,7 +292,6 @@ class RequestBodyParamConverterTest extends \PHPUnit_Framework_TestCase
         $config = $this->createConfiguration(null, null, $userOptions);
 
         $validatorMock = $this->getMockBuilder('Symfony\Component\Validator\ValidatorInterface')
-            ->setMethods(array('validate'))
             ->getMock()
         ;
         $this->converter = new RequestBodyParamConverter($this->serializer, null, null, $validatorMock, 'validationErrors');
